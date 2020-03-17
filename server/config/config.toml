@@ -1,0 +1,10 @@
+[API]
+port     = ":3306"
+version  = "alpha"
+
+[DB]
+dbms = "mysql"
+user = "root"
+pass = "secret"
+protocol = "tcp(db)"
+dbname = "WorkTimeRecoder"
