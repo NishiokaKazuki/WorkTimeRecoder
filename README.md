@@ -1,0 +1,2 @@
+# Project WorkTimeRecoder
+slackでの作業時間を管理するbot
