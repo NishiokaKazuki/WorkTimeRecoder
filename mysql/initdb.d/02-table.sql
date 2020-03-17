@@ -30,7 +30,7 @@ CREATE TABLE work_times
 
 DROP TABLE IF EXISTS work_rests;
 
-CREATE TABLE work_times
+CREATE TABLE work_rests
 (
     id               bigint unsigned AUTO_INCREMENT,
     work_time_id     bigint unsigned NOT NULL,
