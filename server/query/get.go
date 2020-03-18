@@ -18,3 +18,16 @@ func GetUser(db *xorm.Engine, name string) (table.Users, error) {
 
 	return user, err
 }
+
+func GetWorkTime(db *xorm.Engine, content string) (table.WorkTimes, error) {
+	var workTime table.WorkTimes
+
+	_, err := db.Where(
+		"disabled = false",
+	).And(
+		"content = ?",
+		content,
+	).Get(&workTime)
+
+	return workTime, err
+}

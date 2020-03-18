@@ -25,3 +25,12 @@ func CreateWorkTime(db *xorm.Engine, userId uint64, content, supplement string) 
 
 	return affected > 0, err
 }
+
+func CreateWorkRest(db *xorm.Engine, workTimeId uint64) (bool, error) {
+
+	affected, err := db.Insert(&table.WorkRests{
+		WorkTimeId: workTimeId,
+	})
+
+	return affected > 0, err
+}

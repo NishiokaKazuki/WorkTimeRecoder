@@ -12,27 +12,58 @@ func SignUp(userName string) error {
 	con := db.GetDBConn()
 
 	affected, err := query.CreateUser(con, userName)
+	if err != nil {
+		return err
+	}
 	if affected != true {
 		return errors.New("Success created, but out range values")
 	}
 
-	return err
+	return nil
 }
 
 func Working(userName string, content, supplement string) error {
 	con := db.GetDBConn()
 
 	user, err := query.GetUser(con, userName)
+	if user.Id == 0 {
+		return errors.New("Not found user. Did you completed SignUp?")
+	}
 	if err != nil {
 		return err
 	}
 
 	affected, err := query.CreateWorkTime(con, user.Id, content, supplement)
+	if err != nil {
+		return err
+	}
 	if affected != true {
 		return errors.New("Success created, but out range values")
 	}
 
-	return err
+	return nil
+}
+
+func Resting(content string) error {
+	con := db.GetDBConn()
+
+	workTime, err := query.GetWorkTime(con, content)
+	if workTime.Id == 0 {
+		return errors.New("Not found worktime. Did you started working?")
+	}
+	if err != nil {
+		return err
+	}
+
+	affected, err := query.CreateWorkRest(con, workTime.Id)
+	if err != nil {
+		return err
+	}
+	if affected != true {
+		return errors.New("Success created, but out range values")
+	}
+
+	return nil
 }
 
 func ListenAndServe(token string) {
