@@ -8,7 +8,18 @@ import (
 	"github.com/nlopes/slack"
 )
 
-func StartWorking(userName string, content, supplement string) error {
+func SignUp(userName string) error {
+	con := db.GetDBConn()
+
+	affected, err := query.CreateUser(con, userName)
+	if affected != true {
+		return errors.New("Success created, but out range values")
+	}
+
+	return err
+}
+
+func Working(userName string, content, supplement string) error {
 	con := db.GetDBConn()
 
 	user, err := query.GetUser(con, userName)
@@ -20,11 +31,8 @@ func StartWorking(userName string, content, supplement string) error {
 	if affected != true {
 		return errors.New("Success created, but out range values")
 	}
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func ListenAndServe(token string) {
