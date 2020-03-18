@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
     id               bigint unsigned AUTO_INCREMENT,
-    name             text NOT NULL,
+    name             text unique NOT NULL,
     disabled         boolean DEFAULT false,
     created_at       timestamp NOT NULL DEFAULT current_timestamp,
     updated_at       timestamp NOT NULL DEFAULT current_timestamp on update current_timestamp,
