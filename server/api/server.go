@@ -44,6 +44,20 @@ func Working(userName string, content, supplement string) error {
 	return nil
 }
 
+func FinishWorking(userName string, content string) error {
+	con := db.GetDBConn()
+
+	affected, err := query.UpdateWorkTime(con, content)
+	if err != nil {
+		return err
+	}
+	if affected != true {
+		return errors.New("Success updated, but out range values")
+	}
+
+	return nil
+}
+
 func Resting(content string) error {
 	con := db.GetDBConn()
 
