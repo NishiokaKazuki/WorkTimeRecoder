@@ -13,15 +13,15 @@ const (
 	configpath = "config/config.toml"
 )
 
-var db = XormConn()
+var db = xormConn()
 
 func GetDBConn() *xorm.Engine {
 	return db
 }
 
-func XormConn() *xorm.Engine {
+func xormConn() *xorm.Engine {
 
-	db, err := xorm.NewEngine(GetDBConfig())
+	db, err := xorm.NewEngine(getDBConfig())
 	if err != nil {
 		fmt.Println("filed:connect db")
 		panic(err.Error())
@@ -30,7 +30,7 @@ func XormConn() *xorm.Engine {
 	return db
 }
 
-func GetDBConfig() (string, string) {
+func getDBConfig() (string, string) {
 	conf, err := config.ReadDBConfig(configpath)
 	if err != nil {
 		panic(err.Error())
