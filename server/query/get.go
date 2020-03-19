@@ -19,7 +19,7 @@ func GetUser(db *xorm.Engine, name string) (table.Users, error) {
 	return user, err
 }
 
-func GetWorkTime(db *xorm.Engine, content string) (table.WorkTimes, error) {
+func GetWorkTime(db *xorm.Engine, content string, userId uint64) (table.WorkTimes, error) {
 	var workTime table.WorkTimes
 
 	_, err := db.Where(

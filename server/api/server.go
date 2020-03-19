@@ -47,7 +47,15 @@ func Working(userName string, content, supplement string) error {
 func FinishWorking(userName string, content string) error {
 	con := db.GetDBConn()
 
-	affected, err := query.UpdateWorkTime(con, content)
+	user, err := query.GetUser(con, userName)
+	if user.Id == 0 {
+		return errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return err
+	}
+
+	affected, err := query.UpdateWorkTime(con, content, user.Id)
 	if err != nil {
 		return err
 	}
@@ -58,10 +66,18 @@ func FinishWorking(userName string, content string) error {
 	return nil
 }
 
-func Resting(content string) error {
+func Resting(userName, content string) error {
 	con := db.GetDBConn()
 
-	workTime, err := query.GetWorkTime(con, content)
+	user, err := query.GetUser(con, userName)
+	if user.Id == 0 {
+		return errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return err
+	}
+
+	workTime, err := query.GetWorkTime(con, content, user.Id)
 	if workTime.Id == 0 {
 		return errors.New("Not found worktime. Did you started working?")
 	}
@@ -75,6 +91,36 @@ func Resting(content string) error {
 	}
 	if affected != true {
 		return errors.New("Success created, but out range values")
+	}
+
+	return nil
+}
+
+func FinishResting(userName string, content string) error {
+	con := db.GetDBConn()
+
+	user, err := query.GetUser(con, userName)
+	if user.Id == 0 {
+		return errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return err
+	}
+
+	workTime, err := query.GetWorkTime(con, content, user.Id)
+	if workTime.Id == 0 {
+		return errors.New("Not found worktime. Did you started working?")
+	}
+	if err != nil {
+		return err
+	}
+
+	affected, err := query.UpdateWorkRest(con, workTime.Id)
+	if err != nil {
+		return err
+	}
+	if affected != true {
+		return errors.New("Success updated, but out range values")
 	}
 
 	return nil
