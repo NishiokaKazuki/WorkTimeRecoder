@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"log"
+	"server/config"
 	"server/model/db"
 	"server/query"
 	"strings"
@@ -137,10 +138,9 @@ func FinishResting(userName string, content string) error {
 
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 
-	log.Println("check")
 	// Only response in specific channel. Ignore else.
 	if ev.Channel != s.channelID {
-		log.Printf("%s %s", ev.Channel, ev.Msg.Text)
+		log.Println("%s %s", ev.Channel, ev.Msg.Text)
 		return nil
 	}
 
@@ -150,14 +150,12 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 			return err
 		}
 		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
-		return nil
 	} else {
 		res, err := WorkingMessage(ev.Msg.Text)
 		if err != nil {
 			return err
 		}
 		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
-		return nil
 	}
 
 	return nil
@@ -198,10 +196,14 @@ func WorkingMessage(message string) (string, error) {
 func ListenAndServe(token string) {
 	log.Println("Starting Server")
 
+	conf, err := config.ReadBOTConfig()
+	if err != nil {
+		return
+	}
 	params := Slackparams{
-		tokenID:   "xoxb-1015900425939-1027655437248-OXFLwNFfN7UwMl9Q7ItalPrK",
-		botID:     "<@U010TK9CV7A>",
-		channelID: "C010HHPLTFB",
+		tokenID:   conf.TokenID,
+		botID:     conf.BotID,
+		channelID: conf.ChannelID,
 	}
 
 	api := slack.New(params.tokenID)

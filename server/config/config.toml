@@ -8,3 +8,8 @@ user = "root"
 pass = "secret"
 protocol = "tcp(db)"
 dbname = "WorkTimeRecoder"
+
+[BOT]
+tokenID   ="xoxb-1015900425939-1027655437248-OXFLwNFfN7UwMl9Q7ItalPrK"
+botID     = "<@U010TK9CV7A>"
+channelID = "C010HHPLTFB"

@@ -10,10 +10,6 @@ import (
 	"server/config"
 )
 
-const (
-	configpath = "config/config.toml"
-)
-
 var db = xormConn()
 
 func GetDBConn() *xorm.Engine {
@@ -32,7 +28,7 @@ func xormConn() *xorm.Engine {
 }
 
 func getDBConfig() (string, string) {
-	conf, err := config.ReadDBConfig(configpath)
+	conf, err := config.ReadDBConfig()
 	if err != nil {
 		panic(err.Error())
 	}
