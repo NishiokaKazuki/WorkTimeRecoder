@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
     id               bigint unsigned AUTO_INCREMENT,
-    name             text unique NOT NULL,
+    name             text NOT NULL,
     disabled         boolean DEFAULT false,
     created_at       timestamp NOT NULL DEFAULT current_timestamp,
     updated_at       timestamp NOT NULL DEFAULT current_timestamp on update current_timestamp,
@@ -18,7 +18,7 @@ CREATE TABLE work_times
 (
     id               bigint unsigned AUTO_INCREMENT,
     user_id          bigint unsigned NOT NULL,
-    content          text unique NOT NULL,
+    content          VARCHAR(100) unique NOT NULL,
     supplement       text NOT NULL,
     disabled         boolean DEFAULT false,
     started_at       timestamp NOT NULL DEFAULT current_timestamp,

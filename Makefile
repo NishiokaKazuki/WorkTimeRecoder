@@ -23,3 +23,10 @@ docker-build:
 docker-ps:
 	cd docker &&\
 	docker-compose ps
+
+docker-exec-db:
+	docker exec -it WorkTimeRecoder-db /bin/bash
+
+run-server:
+	cd server &&\
+	go run main.go
