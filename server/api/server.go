@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"server/model/db"
 	"server/query"
@@ -137,42 +136,70 @@ func FinishResting(userName string, content string) error {
 }
 
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
+
+	log.Println("check")
 	// Only response in specific channel. Ignore else.
 	if ev.Channel != s.channelID {
 		log.Printf("%s %s", ev.Channel, ev.Msg.Text)
 		return nil
 	}
 
-	// Only response mention to bot. Ignore else.
-	if !strings.HasPrefix(ev.Msg.Text, s.botID) {
-		log.Printf("%s %s", ev.Channel, ev.Msg.Text)
+	if strings.HasPrefix(ev.Msg.Text, s.botID) {
+		res, err := PrefixMessage(ev.Msg.Text)
+		if err != nil {
+			return err
+		}
+		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
 		return nil
-	}
-
-	// Parse message start
-	m := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1:]
-	if len(m) == 0 {
-		return fmt.Errorf("invalid message")
-	}
-
-	if m[0] == "ホリネズミ?" {
-		s.rtm.SendMessage(s.rtm.NewOutgoingMessage("そうだ！", ev.Channel))
-		return nil
-	}
-
-	if m[0] == "ネズミ?" {
-		s.rtm.SendMessage(s.rtm.NewOutgoingMessage("ちがう！", ev.Channel))
+	} else {
+		res, err := WorkingMessage(ev.Msg.Text)
+		if err != nil {
+			return err
+		}
+		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
 		return nil
 	}
 
 	return nil
 }
 
+func PrefixMessage(message string) (string, error) {
+	var res string
+
+	log.Println(message)
+	switch message {
+	default:
+		res = "Command List\n"
+	}
+
+	return res, nil
+}
+
+func WorkingMessage(message string) (string, error) {
+	var res string
+
+	m := strings.Split(strings.TrimSpace(message), " ")
+
+	switch m[0] {
+	case "開始":
+		res = "Start Working"
+	case "終了":
+		res = "End Working"
+	case "中断":
+		res = "Start Resting"
+	case "再開":
+		res = "End Resting"
+	default:
+		res = "no response"
+	}
+	return res, nil
+}
+
 func ListenAndServe(token string) {
 	log.Println("Starting Server")
 
 	params := Slackparams{
-		tokenID:   "xoxb-1015900425939-1027655437248-ZIst9HIL1KF8z89ThuUL3Hce",
+		tokenID:   "xoxb-1015900425939-1027655437248-OXFLwNFfN7UwMl9Q7ItalPrK",
 		botID:     "<@U010TK9CV7A>",
 		channelID: "C010HHPLTFB",
 	}
@@ -186,7 +213,7 @@ func ListenAndServe(token string) {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
 			if err := params.ValidateMessageEvent(ev); err != nil {
-				log.Printf("[ERROR] Failed to handle message: %s", err)
+				log.Println("[ERROR] Failed to handle message: %s", err)
 			}
 		}
 	}
