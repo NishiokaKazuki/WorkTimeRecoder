@@ -15,27 +15,42 @@ type Slackparams struct {
 	tokenID   string
 	botID     string
 	channelID string
+	signupCh  string
 	rtm       *slack.RTM
 }
 
-func SignUp(userName string) error {
+func SignUp(appUser *slack.User) error {
 	con := db.GetDBConn()
 
-	affected, err := query.CreateUser(con, userName)
+	user, err := query.GetUser(con, appUser.ID)
 	if err != nil {
 		return err
 	}
-	if affected != true {
-		return errors.New("Success created, but out range values")
+	if user.Id != 0 {
+		affected, err := query.UpdateUser(con, appUser.RealName, appUser.ID)
+		if err != nil {
+			return err
+		}
+		if affected != true {
+			return errors.New("Success updated, but out range values")
+		}
+	} else {
+		affected, err := query.CreateUser(con, appUser.RealName, appUser.ID)
+		if err != nil {
+			return err
+		}
+		if affected != true {
+			return errors.New("Success created, but out range values")
+		}
 	}
 
 	return nil
 }
 
-func Working(userName string, content, supplement string) error {
+func Working(hash string, content, supplement string) error {
 	con := db.GetDBConn()
 
-	user, err := query.GetUser(con, userName)
+	user, err := query.GetUser(con, hash)
 	if user.Id == 0 {
 		return errors.New("Not found user. Did you completed SignUp?")
 	}
@@ -54,10 +69,10 @@ func Working(userName string, content, supplement string) error {
 	return nil
 }
 
-func FinishWorking(userName string, content string) error {
+func FinishWorking(hash string, content string) error {
 	con := db.GetDBConn()
 
-	user, err := query.GetUser(con, userName)
+	user, err := query.GetUser(con, hash)
 	if user.Id == 0 {
 		return errors.New("Not found user. Did you completed SignUp?")
 	}
@@ -76,10 +91,10 @@ func FinishWorking(userName string, content string) error {
 	return nil
 }
 
-func Resting(userName, content string) error {
+func Resting(hash, content string) error {
 	con := db.GetDBConn()
 
-	user, err := query.GetUser(con, userName)
+	user, err := query.GetUser(con, hash)
 	if user.Id == 0 {
 		return errors.New("Not found user. Did you completed SignUp?")
 	}
@@ -106,10 +121,10 @@ func Resting(userName, content string) error {
 	return nil
 }
 
-func FinishResting(userName string, content string) error {
+func FinishResting(hash string, content string) error {
 	con := db.GetDBConn()
 
-	user, err := query.GetUser(con, userName)
+	user, err := query.GetUser(con, hash)
 	if user.Id == 0 {
 		return errors.New("Not found user. Did you completed SignUp?")
 	}
@@ -137,6 +152,17 @@ func FinishResting(userName string, content string) error {
 }
 
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
+
+	if ev.Channel == s.signupCh {
+		user, err := s.rtm.GetUserInfo(ev.Msg.User)
+		if err != nil {
+			return err
+		}
+		if err := SignUp(user); err != nil {
+			return err
+		}
+		return nil
+	}
 
 	// Only response in specific channel. Ignore else.
 	if ev.Channel != s.channelID {
@@ -204,6 +230,7 @@ func ListenAndServe(token string) {
 		tokenID:   conf.TokenID,
 		botID:     conf.BotID,
 		channelID: conf.ChannelID,
+		signupCh:  conf.SignUpCh,
 	}
 
 	api := slack.New(params.tokenID)

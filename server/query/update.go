@@ -6,6 +6,20 @@ import (
 	"github.com/go-xorm/xorm"
 )
 
+func UpdateUser(db *xorm.Engine, userName, hash string) (bool, error) {
+
+	affected, err := db.Cols(
+		"name",
+	).Where(
+		"hash = ?",
+		hash,
+	).Update(&table.Users{
+		Name: userName,
+	})
+
+	return affected > 0, err
+}
+
 func UpdateWorkTime(db *xorm.Engine, content string, userId uint64) (bool, error) {
 
 	affected, err := db.Cols(
@@ -16,7 +30,7 @@ func UpdateWorkTime(db *xorm.Engine, content string, userId uint64) (bool, error
 	).And(
 		"user_id",
 		userId,
-	).Insert(&table.WorkTimes{})
+	).Update(&table.WorkTimes{})
 
 	return affected > 0, err
 }
@@ -28,7 +42,7 @@ func UpdateWorkRest(db *xorm.Engine, workTimeId uint64) (bool, error) {
 	).Where(
 		"work_time_id = ?",
 		workTimeId,
-	).Insert(&table.WorkRests{})
+	).Update(&table.WorkRests{})
 
 	return affected > 0, err
 }

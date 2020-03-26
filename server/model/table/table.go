@@ -7,6 +7,7 @@ import (
 type Users struct {
 	Id   uint64
 	Name string
+	Hash string
 }
 
 type WorkTimes struct {

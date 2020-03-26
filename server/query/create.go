@@ -6,10 +6,11 @@ import (
 	"github.com/go-xorm/xorm"
 )
 
-func CreateUser(db *xorm.Engine, userName string) (bool, error) {
+func CreateUser(db *xorm.Engine, userName, hash string) (bool, error) {
 
 	affected, err := db.Insert(&table.Users{
 		Name: userName,
+		Hash: hash,
 	})
 
 	return affected > 0, err

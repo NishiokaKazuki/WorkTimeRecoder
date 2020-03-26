@@ -33,9 +33,10 @@ type BOTConfig struct {
 }
 
 type BOTConfigs struct {
-	TokenID   string `toml:"tokenid"`
-	BotID     string `toml:"botid"`
-	ChannelID string `toml:"channelid"`
+	TokenID   string `toml:"tokenID"`
+	BotID     string `toml:"botID"`
+	ChannelID string `toml:"channelID"`
+	SignUpCh  string `toml:"signupCh"`
 }
 
 const (
