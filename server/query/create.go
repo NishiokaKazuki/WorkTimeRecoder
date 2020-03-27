@@ -16,14 +16,9 @@ func CreateUser(db *xorm.Engine, userName, hash string) (bool, error) {
 	return affected > 0, err
 }
 
-func CreateWorkTime(db *xorm.Engine, userId uint64, content, supplement string) (bool, error) {
+func CreateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 
-	affected, err := db.Insert(&table.WorkTimes{
-		UserId:     userId,
-		Content:    content,
-		Supplement: supplement,
-	})
-
+	affected, err := db.Insert(&workTimes)
 	return affected > 0, err
 }
 

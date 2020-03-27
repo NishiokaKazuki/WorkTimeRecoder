@@ -5,8 +5,11 @@ import (
 	"log"
 	"server/config"
 	"server/model/db"
+	"server/model/table"
 	"server/query"
+	"server/utils"
 	"strings"
+	"time"
 
 	"github.com/slack-go/slack"
 )
@@ -47,8 +50,14 @@ func SignUp(appUser *slack.User) error {
 	return nil
 }
 
-func Working(hash string, content, supplement string) error {
+func Working(hash string, message []string) error {
+	supplement := ""
+	date := time.Now()
 	con := db.GetDBConn()
+
+	if len(message) == 0 {
+		return errors.New("Too few arguments for working.")
+	}
 
 	user, err := query.GetUser(con, hash)
 	if user.Id == 0 {
@@ -58,7 +67,29 @@ func Working(hash string, content, supplement string) error {
 		return err
 	}
 
-	affected, err := query.CreateWorkTime(con, user.Id, content, supplement)
+	for i, msg := range message[1:] {
+		if msg == "-t" && len(message) >= i+3 {
+			if d, err := utils.FormatTimeStamp(message[i+2]); err == nil {
+				date = d
+			}
+		}
+	}
+
+	for i, msg := range message[1:] {
+		if msg == "-m" && len(message) >= i+3 {
+			supplement = message[i+2]
+		}
+	}
+
+	affected, err := query.CreateWorkTime(
+		con,
+		table.WorkTimes{
+			UserId:     user.Id,
+			Content:    message[0],
+			Supplement: supplement,
+			StartedAt:  date,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -177,7 +208,7 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 		}
 		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
 	} else {
-		res, err := WorkingMessage(ev.Msg.Text)
+		res, err := WorkingMessage(ev.Msg.User, ev.Msg.Text)
 		if err != nil {
 			return err
 		}
@@ -199,13 +230,16 @@ func PrefixMessage(message string) (string, error) {
 	return res, nil
 }
 
-func WorkingMessage(message string) (string, error) {
+func WorkingMessage(hash, message string) (string, error) {
 	var res string
 
 	m := strings.Split(strings.TrimSpace(message), " ")
 
 	switch m[0] {
 	case "開始":
+		if err := Working(hash, m[1:]); err != nil {
+			return "", err
+		}
 		res = "Start Working"
 	case "終了":
 		res = "End Working"

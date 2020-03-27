@@ -10,7 +10,7 @@ protocol = "tcp([localhost]:13306)"
 dbname = "WorkTimeRecoder"
 
 [BOT]
-tokenID    ="xoxb-1015900425939-1027655437248-7oQMuN1zUmCr4uhVz2qHCFAP"
+tokenID    ="xoxb-1015900425939-1027655437248-0NOyx45W6cFUc6DJmzZvZZua"
 botID      = "<@U010TK9CV7A>"
 channelID  = "C010HHPLTFB"
 signupCh   = "C010JDA71BK"
