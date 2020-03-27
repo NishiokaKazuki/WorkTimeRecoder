@@ -20,16 +20,16 @@ func UpdateUser(db *xorm.Engine, userName, hash string) (bool, error) {
 	return affected > 0, err
 }
 
-func UpdateWorkTime(db *xorm.Engine, content string, userId uint64) (bool, error) {
+func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 
 	affected, err := db.Cols(
 		"finished_at",
 	).Where(
 		"content = ?",
-		content,
+		workTimes.Content,
 	).And(
 		"user_id",
-		userId,
+		workTimes.UserId,
 	).Update(&table.WorkTimes{})
 
 	return affected > 0, err

@@ -100,7 +100,9 @@ func Working(hash string, message []string) error {
 	return nil
 }
 
-func FinishWorking(hash string, content string) error {
+func FinishWorking(hash string, message []string) error {
+	supplement := ""
+	date := time.Now()
 	con := db.GetDBConn()
 
 	user, err := query.GetUser(con, hash)
@@ -111,7 +113,27 @@ func FinishWorking(hash string, content string) error {
 		return err
 	}
 
-	affected, err := query.UpdateWorkTime(con, content, user.Id)
+	for i, msg := range message[1:] {
+		if msg == "-t" && len(message) >= i+3 {
+			if d, err := utils.FormatTimeStamp(message[i+2]); err == nil {
+				date = d
+			}
+		}
+	}
+
+	for i, msg := range message[1:] {
+		if msg == "-m" && len(message) >= i+3 {
+			supplement = message[i+2]
+		}
+	}
+
+	affected, err := query.UpdateWorkTime(con,
+		table.WorkTimes{
+			UserId:     user.Id,
+			Content:    message[0],
+			Supplement: supplement,
+			StartedAt:  date,
+		})
 	if err != nil {
 		return err
 	}
@@ -242,6 +264,9 @@ func WorkingMessage(hash, message string) (string, error) {
 		}
 		res = "Start Working"
 	case "終了":
+		if err := FinishWorking(hash, m[1:]); err != nil {
+			return "", err
+		}
 		res = "End Working"
 	case "中断":
 		res = "Start Resting"
