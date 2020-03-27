@@ -45,3 +45,28 @@ func FormatTimeStamp(date string) (time.Time, error) {
 
 	return t, nil
 }
+
+func SplitTimeOption(message []string) (time.Time, bool) {
+	var date time.Time
+
+	for i, msg := range message {
+		if msg == "-t" && len(message) >= i+2 {
+			if date, err := FormatTimeStamp(message[i+1]); err == nil {
+				return date, true
+			}
+		}
+	}
+
+	return date, false
+}
+
+func SplitSuppleOption(message []string) (string, bool) {
+
+	for i, msg := range message {
+		if msg == "-m" && len(message) >= i+2 {
+			return message[i+1], true
+		}
+	}
+
+	return "", false
+}

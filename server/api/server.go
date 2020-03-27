@@ -67,18 +67,12 @@ func Working(hash string, message []string) error {
 		return err
 	}
 
-	for i, msg := range message[1:] {
-		if msg == "-t" && len(message) >= i+3 {
-			if d, err := utils.FormatTimeStamp(message[i+2]); err == nil {
-				date = d
-			}
-		}
+	if d, has := utils.SplitTimeOption(message[1:]); has == true {
+		date = d
 	}
 
-	for i, msg := range message[1:] {
-		if msg == "-m" && len(message) >= i+3 {
-			supplement = message[i+2]
-		}
+	if supple, has := utils.SplitSuppleOption(message[1:]); has == true {
+		supplement = supple
 	}
 
 	affected, err := query.CreateWorkTime(
@@ -113,18 +107,12 @@ func FinishWorking(hash string, message []string) error {
 		return err
 	}
 
-	for i, msg := range message[1:] {
-		if msg == "-t" && len(message) >= i+3 {
-			if d, err := utils.FormatTimeStamp(message[i+2]); err == nil {
-				date = d
-			}
-		}
+	if d, has := utils.SplitTimeOption(message[1:]); has == true {
+		date = d
 	}
 
-	for i, msg := range message[1:] {
-		if msg == "-m" && len(message) >= i+3 {
-			supplement = message[i+2]
-		}
+	if supple, has := utils.SplitSuppleOption(message[1:]); has == true {
+		supplement = supple
 	}
 
 	affected, err := query.UpdateWorkTime(con,
@@ -144,8 +132,13 @@ func FinishWorking(hash string, message []string) error {
 	return nil
 }
 
-func Resting(hash, content string) error {
+func Resting(hash string, message []string) error {
+	date := time.Now()
 	con := db.GetDBConn()
+
+	if len(message) == 0 {
+		return errors.New("Too few arguments for working.")
+	}
 
 	user, err := query.GetUser(con, hash)
 	if user.Id == 0 {
@@ -155,7 +148,7 @@ func Resting(hash, content string) error {
 		return err
 	}
 
-	workTime, err := query.GetWorkTime(con, content, user.Id)
+	workTime, err := query.GetWorkTime(con, message[0], user.Id)
 	if workTime.Id == 0 {
 		return errors.New("Not found worktime. Did you started working?")
 	}
@@ -163,7 +156,14 @@ func Resting(hash, content string) error {
 		return err
 	}
 
-	affected, err := query.CreateWorkRest(con, workTime.Id)
+	if d, has := utils.SplitTimeOption(message[1:]); has == true {
+		date = d
+	}
+
+	affected, err := query.CreateWorkRest(con, table.WorkRests{
+		WorkTimeId: workTime.Id,
+		StartedAt:  date,
+	})
 	if err != nil {
 		return err
 	}
@@ -269,6 +269,9 @@ func WorkingMessage(hash, message string) (string, error) {
 		}
 		res = "End Working"
 	case "中断":
+		if err := Resting(hash, m[1:]); err != nil {
+			return "", err
+		}
 		res = "Start Resting"
 	case "再開":
 		res = "End Resting"

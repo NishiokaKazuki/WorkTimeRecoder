@@ -22,11 +22,8 @@ func CreateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 	return affected > 0, err
 }
 
-func CreateWorkRest(db *xorm.Engine, workTimeId uint64) (bool, error) {
+func CreateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 
-	affected, err := db.Insert(&table.WorkRests{
-		WorkTimeId: workTimeId,
-	})
-
+	affected, err := db.Insert(&workRest)
 	return affected > 0, err
 }
