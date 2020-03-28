@@ -120,7 +120,7 @@ func FinishWorking(hash string, message []string) error {
 			UserId:     user.Id,
 			Content:    message[0],
 			Supplement: supplement,
-			StartedAt:  date,
+			FinishedAt: date,
 		})
 	if err != nil {
 		return err
@@ -174,7 +174,8 @@ func Resting(hash string, message []string) error {
 	return nil
 }
 
-func FinishResting(hash string, content string) error {
+func FinishResting(hash string, message []string) error {
+	date := time.Now()
 	con := db.GetDBConn()
 
 	user, err := query.GetUser(con, hash)
@@ -185,7 +186,7 @@ func FinishResting(hash string, content string) error {
 		return err
 	}
 
-	workTime, err := query.GetWorkTime(con, content, user.Id)
+	workTime, err := query.GetWorkTime(con, message[0], user.Id)
 	if workTime.Id == 0 {
 		return errors.New("Not found worktime. Did you started working?")
 	}
@@ -193,7 +194,14 @@ func FinishResting(hash string, content string) error {
 		return err
 	}
 
-	affected, err := query.UpdateWorkRest(con, workTime.Id)
+	if d, has := utils.SplitTimeOption(message[1:]); has == true {
+		date = d
+	}
+
+	affected, err := query.UpdateWorkRest(con, table.WorkRests{
+		WorkTimeId: workTime.Id,
+		FinishedAt: date,
+	})
 	if err != nil {
 		return err
 	}
@@ -232,6 +240,7 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 	} else {
 		res, err := WorkingMessage(ev.Msg.User, ev.Msg.Text)
 		if err != nil {
+			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
 			return err
 		}
 		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
@@ -274,6 +283,9 @@ func WorkingMessage(hash, message string) (string, error) {
 		}
 		res = "Start Resting"
 	case "再開":
+		if err := FinishResting(hash, m[1:]); err != nil {
+			return "", err
+		}
 		res = "End Resting"
 	default:
 		res = "no response"

@@ -35,13 +35,13 @@ func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 	return affected > 0, err
 }
 
-func UpdateWorkRest(db *xorm.Engine, workTimeId uint64) (bool, error) {
+func UpdateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 
 	affected, err := db.Cols(
 		"finished_at",
 	).Where(
 		"work_time_id = ?",
-		workTimeId,
+		workRest.Id,
 	).Update(&table.WorkRests{})
 
 	return affected > 0, err
