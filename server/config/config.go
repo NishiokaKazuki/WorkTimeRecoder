@@ -35,7 +35,8 @@ type BOTConfig struct {
 type BOTConfigs struct {
 	TokenID   string `toml:"tokenID"`
 	BotID     string `toml:"botID"`
-	ChannelID string `toml:"channelID"`
+	WorkingCh string `toml:"workingCh"`
+	ReportCh  string `toml:"reportCh"`
 	SignUpCh  string `toml:"signupCh"`
 }
 

@@ -28,9 +28,11 @@ func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 		"content = ?",
 		workTimes.Content,
 	).And(
-		"user_id",
+		"user_id = ?",
 		workTimes.UserId,
-	).Update(&table.WorkTimes{})
+	).Update(&table.WorkTimes{
+		FinishedAt: workTimes.FinishedAt,
+	})
 
 	return affected > 0, err
 }

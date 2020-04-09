@@ -17,7 +17,8 @@ import (
 type Slackparams struct {
 	tokenID   string
 	botID     string
-	channelID string
+	workingCh string
+	reportCh  string
 	signupCh  string
 	rtm       *slack.RTM
 }
@@ -95,7 +96,6 @@ func Working(hash string, message []string) error {
 }
 
 func FinishWorking(hash string, message []string) error {
-	supplement := ""
 	date := time.Now()
 	con := db.GetDBConn()
 
@@ -111,15 +111,10 @@ func FinishWorking(hash string, message []string) error {
 		date = d
 	}
 
-	if supple, has := utils.SplitSuppleOption(message[1:]); has == true {
-		supplement = supple
-	}
-
 	affected, err := query.UpdateWorkTime(con,
 		table.WorkTimes{
 			UserId:     user.Id,
 			Content:    message[0],
-			Supplement: supplement,
 			FinishedAt: date,
 		})
 	if err != nil {
@@ -212,9 +207,30 @@ func FinishResting(hash string, message []string) error {
 	return nil
 }
 
+func WorkInfo(hash string, message []string) (string, error) {
+	date := time.Now()
+	con := db.GetDBConn()
+
+	user, err := query.GetUser(con, hash)
+	if user.Id == 0 {
+		return "", errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return "", err
+	}
+
+	workInfo, err := query.FindWorkInfos(con, date, user.Id)
+	if err != nil {
+		return "", err
+	}
+
+	return utils.SplitWorkInfo(workInfo, user)
+}
+
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 
-	if ev.Channel == s.signupCh {
+	switch ev.Channel {
+	case s.signupCh:
 		user, err := s.rtm.GetUserInfo(ev.Msg.User)
 		if err != nil {
 			return err
@@ -222,28 +238,38 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 		if err := SignUp(user); err != nil {
 			return err
 		}
-		return nil
-	}
-
-	// Only response in specific channel. Ignore else.
-	if ev.Channel != s.channelID {
+	case s.workingCh:
+		if strings.HasPrefix(ev.Msg.Text, s.botID) {
+			res, err := PrefixMessage(ev.Msg.Text)
+			if err != nil {
+				return err
+			}
+			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+		} else {
+			res, err := WorkingMessage(ev.Msg.User, ev.Msg.Text)
+			if err != nil {
+				s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
+				return err
+			}
+			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+		}
+	case s.reportCh:
+		if strings.HasPrefix(ev.Msg.Text, s.botID) {
+			res, err := PrefixMessage(ev.Msg.Text)
+			if err != nil {
+				return err
+			}
+			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+		} else {
+			res, err := ReportMessage(ev.Msg.User, ev.Msg.Text)
+			if err != nil {
+				s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
+				return err
+			}
+			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+		}
+	default:
 		log.Println("%s %s", ev.Channel, ev.Msg.Text)
-		return nil
-	}
-
-	if strings.HasPrefix(ev.Msg.Text, s.botID) {
-		res, err := PrefixMessage(ev.Msg.Text)
-		if err != nil {
-			return err
-		}
-		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
-	} else {
-		res, err := WorkingMessage(ev.Msg.User, ev.Msg.Text)
-		if err != nil {
-			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
-			return err
-		}
-		s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
 	}
 
 	return nil
@@ -262,7 +288,7 @@ func PrefixMessage(message string) (string, error) {
 			"3.再開 `hogehoge` -t\n" +
 			"4.終了 `hogehoge` -t\n\n" +
 			"option list\n" +
-			"-t  : 時間を指定可能 `yyyy/mm/dd hh:mm`, `hh:mm` のフォーマット\n" +
+			"-t  : 時間を指定可能 `yyyy-mm-dd hh:mm`, `hh:mm` のフォーマット\n" +
 			"-m  : コメントを追記可能 ただし半角空白で区切られる\n"
 	}
 
@@ -301,6 +327,25 @@ func WorkingMessage(hash, message string) (string, error) {
 	return res, nil
 }
 
+func ReportMessage(hash, message string) (string, error) {
+	var res string
+
+	m := strings.Split(strings.TrimSpace(message), " ")
+
+	switch m[0] {
+	case "作業記録":
+		r, err := WorkInfo(hash, m[1:])
+		if err != nil {
+			return "", err
+		}
+		res = r
+	default:
+		res = "no response"
+	}
+
+	return res, nil
+}
+
 func ListenAndServe(token string) {
 	log.Println("Starting Server")
 
@@ -311,7 +356,8 @@ func ListenAndServe(token string) {
 	params := Slackparams{
 		tokenID:   conf.TokenID,
 		botID:     conf.BotID,
-		channelID: conf.ChannelID,
+		workingCh: conf.WorkingCh,
+		reportCh:  conf.ReportCh,
 		signupCh:  conf.SignUpCh,
 	}
 
