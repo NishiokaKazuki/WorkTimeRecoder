@@ -15,6 +15,7 @@ type WorkTimes struct {
 	UserId     uint64
 	Content    string
 	Supplement string
+	Isfinished bool
 	StartedAt  time.Time
 	FinishedAt time.Time
 }
@@ -22,6 +23,7 @@ type WorkTimes struct {
 type WorkRests struct {
 	Id         uint64
 	WorkTimeId uint64
+	Isfinished bool
 	StartedAt  time.Time
 	FinishedAt time.Time
 }

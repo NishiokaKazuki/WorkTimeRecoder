@@ -1,6 +1,7 @@
 package query
 
 import (
+	"errors"
 	"server/model/table"
 
 	"github.com/go-xorm/xorm"
@@ -23,6 +24,17 @@ func CreateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 }
 
 func CreateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
+	var r table.WorkRests
+
+	has, _ := db.Where(
+		"work_time_id = ?",
+		workRest.WorkTimeId,
+	).And(
+		"is_finished = false",
+	).Get(&r)
+	if has != false {
+		return false, errors.New("Should finish other resting.")
+	}
 
 	affected, err := db.Insert(&workRest)
 	return affected > 0, err

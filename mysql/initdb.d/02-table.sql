@@ -21,6 +21,7 @@ CREATE TABLE work_times
     user_id          bigint unsigned NOT NULL,
     content          VARCHAR(100) unique NOT NULL,
     supplement       text NOT NULL,
+    is_finished      boolean DEFAULT false,
     disabled         boolean DEFAULT false,
     started_at       timestamp NOT NULL DEFAULT current_timestamp,
     finished_at      timestamp NOT NULL DEFAULT current_timestamp on update current_timestamp,
@@ -35,6 +36,7 @@ CREATE TABLE work_rests
 (
     id               bigint unsigned AUTO_INCREMENT,
     work_time_id     bigint unsigned NOT NULL,
+    is_finished      boolean DEFAULT false,
     disabled         boolean DEFAULT false,
     started_at       timestamp NOT NULL DEFAULT current_timestamp,
     finished_at      timestamp NOT NULL DEFAULT current_timestamp on update current_timestamp,

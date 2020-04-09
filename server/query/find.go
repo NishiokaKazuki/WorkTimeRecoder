@@ -15,6 +15,8 @@ func FindWorkInfos(db *xorm.Engine, date time.Time, userId uint64) ([]join.WorkI
 	db.Where(
 		"work_times.user_id = ?",
 		userId,
+	).And(
+		"is_finished = true",
 	).Iterate(&table.WorkTimes{}, func(idx int, bean interface{}) error {
 		workTime := bean.(*table.WorkTimes)
 		workInfos = append(workInfos, join.WorkInfos{
@@ -27,6 +29,8 @@ func FindWorkInfos(db *xorm.Engine, date time.Time, userId uint64) ([]join.WorkI
 		db.Where(
 			"work_time_id = ?",
 			w.Id,
+		).And(
+			"is_finished = true",
 		).Find(&workInfos[i].WorkRests)
 	}
 
