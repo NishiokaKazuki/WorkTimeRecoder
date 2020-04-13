@@ -27,3 +27,8 @@ type WorkRests struct {
 	StartedAt  time.Time
 	FinishedAt time.Time
 }
+
+type SessionWorkTimes struct {
+	WorkTimeId uint64
+	Hash       string
+}

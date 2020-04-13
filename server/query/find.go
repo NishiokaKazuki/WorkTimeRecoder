@@ -36,3 +36,16 @@ func FindWorkInfos(db *xorm.Engine, date time.Time, userId uint64) ([]join.WorkI
 
 	return workInfos, nil
 }
+
+func FindWorkTimeLatest(db *xorm.Engine, cnt int, userId uint64) ([]table.WorkTimes, error) {
+	var workTimes []table.WorkTimes
+
+	err := db.Where(
+		"user_id = ?",
+		userId,
+	).Limit(cnt).Desc(
+		"started_at",
+	).Find(workTimes)
+
+	return workTimes, err
+}

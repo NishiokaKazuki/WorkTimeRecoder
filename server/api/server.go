@@ -8,6 +8,7 @@ import (
 	"server/model/table"
 	"server/query"
 	"server/utils"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,7 +40,7 @@ func SignUp(appUser *slack.User) error {
 			return errors.New("Success updated, but out range values")
 		}
 	} else {
-		affected, err := query.CreateUser(con, appUser.RealName, appUser.ID)
+		affected, err := query.InsertUser(con, appUser.RealName, appUser.ID)
 		if err != nil {
 			return err
 		}
@@ -76,7 +77,7 @@ func Working(hash string, message []string) error {
 		supplement = supple
 	}
 
-	affected, err := query.CreateWorkTime(
+	affected, err := query.InsertWorkTime(
 		con,
 		table.WorkTimes{
 			UserId:     user.Id,
@@ -155,7 +156,7 @@ func Resting(hash string, message []string) error {
 		date = d
 	}
 
-	affected, err := query.CreateWorkRest(con, table.WorkRests{
+	affected, err := query.InsertWorkRest(con, table.WorkRests{
 		WorkTimeId: workTime.Id,
 		StartedAt:  date,
 	})
@@ -205,6 +206,30 @@ func FinishResting(hash string, message []string) error {
 	}
 
 	return nil
+}
+
+func WorkLog(hash string, message []string) (string, error) {
+	con := db.GetDBConn()
+
+	user, err := query.GetUser(con, hash)
+	if user.Id == 0 {
+		return "", errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return "", err
+	}
+
+	cnt, err := strconv.Atoi(message[0])
+	if err != nil {
+		return "", err
+	}
+
+	workTimes, err := query.FindWorkTimeLatest(con, cnt, user.Id)
+	if err != nil {
+		return "", err
+	}
+
+	return utils.FormatWorkTimes(workTimes)
 }
 
 func WorkInfo(hash string, message []string) (string, error) {
@@ -339,6 +364,7 @@ func ReportMessage(hash, message string) (string, error) {
 			return "", err
 		}
 		res = r
+	case "log":
 	default:
 		res = "no response"
 	}

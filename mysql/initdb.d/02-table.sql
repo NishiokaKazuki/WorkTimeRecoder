@@ -44,3 +44,14 @@ CREATE TABLE work_rests
     REFERENCES work_times(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+DROP TABLE IF EXISTS session_work_times;
+
+CREATE TABLE session_work_times
+(
+    work_time_id     bigint unsigned NOT NULL,
+    hash             VARCHAR(31) unique NOT NULL,
+    disabled         boolean   NOT NULL DEFAULT false,
+    created_at       timestamp NOT NULL DEFAULT current_timestamp,
+    updated_at       timestamp NOT NULL DEFAULT current_timestamp,
+)

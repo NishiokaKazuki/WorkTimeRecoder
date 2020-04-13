@@ -7,7 +7,7 @@ import (
 	"github.com/go-xorm/xorm"
 )
 
-func CreateUser(db *xorm.Engine, userName, hash string) (bool, error) {
+func InsertUser(db *xorm.Engine, userName, hash string) (bool, error) {
 
 	affected, err := db.Insert(&table.Users{
 		Name: userName,
@@ -17,13 +17,13 @@ func CreateUser(db *xorm.Engine, userName, hash string) (bool, error) {
 	return affected > 0, err
 }
 
-func CreateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
+func InsertWorkTime(db *xorm.Engine, workTime table.WorkTimes) (bool, error) {
 
-	affected, err := db.Insert(&workTimes)
+	affected, err := db.Insert(&workTime)
 	return affected > 0, err
 }
 
-func CreateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
+func InsertWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 	var r table.WorkRests
 
 	has, _ := db.Where(
@@ -37,5 +37,11 @@ func CreateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 	}
 
 	affected, err := db.Insert(&workRest)
+	return affected > 0, err
+}
+
+func InsertSessionWorkTimes(db *xorm.Engine, sessionWorkTimes []table.SessionWorkTimes) (bool, error) {
+
+	affected, err := db.Insert(&sessionWorkTimes)
 	return affected > 0, err
 }

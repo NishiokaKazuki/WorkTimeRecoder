@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"log"
+	"math/rand"
 	"server/model/join"
 	"server/model/table"
 	"strconv"
@@ -12,6 +13,8 @@ import (
 
 const (
 	dateFormat = "2006-01-02 03:04"
+	decimal    = 10
+	letters    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
 func FormatTimeStamp(date string) (time.Time, error) {
@@ -84,7 +87,6 @@ func SplitSuppleOption(message []string) (string, bool) {
 
 func SplitWorkInfo(workInfo []join.WorkInfos, user table.Users) (string, error) {
 	var message string
-	log.Println(workInfo)
 
 	message += "作業時間\n"
 	for _, w := range workInfo {
@@ -107,4 +109,32 @@ func SplitWorkInfo(workInfo []join.WorkInfos, user table.Users) (string, error) 
 	}
 
 	return user.Name + " 作業記録\n" + message, nil
+}
+
+func FormatWorkTimes(workTimes []table.WorkTimes) (string, error) {
+	var message string
+
+	for _, w := range workTimes {
+		message += strconv.FormatUint(w.Id, decimal) + " "
+		message += w.Content + "\n"
+	}
+
+	return message, nil
+}
+
+func SessionWorkTimesSetHash(session []table.SessionWorkTimes) []table.SessionWorkTimes {
+	for i, _ := range session {
+		session[i].Hash = createHash(30)
+	}
+
+	return session
+}
+
+func createHash(cnt int) string {
+	b := make([]byte, cnt)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+
+	return string(b)
 }
