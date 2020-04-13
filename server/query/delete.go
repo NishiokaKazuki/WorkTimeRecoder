@@ -27,3 +27,18 @@ func DeleteSessionWorkTimes(db *xorm.Engine, userId uint64) error {
 
 	return err
 }
+
+func DeleteWorkTimes(db *xorm.Engine, workTimeId, userId uint64) (bool, error) {
+
+	affected, err := db.Cols("disabled").Where(
+		"Id = ?",
+		workTimeId,
+	).And(
+		"user_id = ?",
+		userId,
+	).Update(&table.WorkTimes{
+		Disabled: true,
+	})
+
+	return affected == 0, err
+}

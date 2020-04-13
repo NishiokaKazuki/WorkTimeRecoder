@@ -20,7 +20,7 @@ func InsertUser(db *xorm.Engine, userName, hash string) (bool, error) {
 func InsertWorkTime(db *xorm.Engine, workTime table.WorkTimes) (bool, error) {
 
 	affected, err := db.Insert(&workTime)
-	return affected > 0, err
+	return affected == 0, err
 }
 
 func InsertWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
@@ -37,11 +37,11 @@ func InsertWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 	}
 
 	affected, err := db.Insert(&workRest)
-	return affected > 0, err
+	return affected == 0, err
 }
 
 func InsertSessionWorkTimes(db *xorm.Engine, sessionWorkTimes []table.SessionWorkTimes) (bool, error) {
 
 	affected, err := db.Insert(&sessionWorkTimes)
-	return affected > 0, err
+	return affected == 0, err
 }

@@ -5,9 +5,10 @@ import (
 )
 
 type Users struct {
-	Id   uint64
-	Name string
-	Hash string
+	Id       uint64
+	Name     string
+	Hash     string
+	Disabled bool
 }
 
 type WorkTimes struct {
@@ -16,6 +17,7 @@ type WorkTimes struct {
 	Content    string
 	Supplement string
 	Isfinished bool
+	Disabled   bool
 	StartedAt  time.Time
 	FinishedAt time.Time
 }
@@ -24,6 +26,7 @@ type WorkRests struct {
 	Id         uint64
 	WorkTimeId uint64
 	Isfinished bool
+	Disabled   bool
 	StartedAt  time.Time
 	FinishedAt time.Time
 }

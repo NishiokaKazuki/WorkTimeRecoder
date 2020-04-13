@@ -208,6 +208,33 @@ func FinishResting(hash string, message []string) error {
 	return nil
 }
 
+func SuspensionWorking(hash string, message []string) (string, error) {
+	con := db.GetDBConn()
+
+	user, err := query.GetUser(con, hash)
+	if user.Id == 0 {
+		return "", errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return "", err
+	}
+
+	workTimeId, err := strconv.ParseUint(message[0], 10, 64)
+	if err != nil {
+		return "", err
+	}
+
+	affected, err := query.DeleteWorkTimes(con, workTimeId, user.Id)
+	if err != nil {
+		return "", err
+	}
+	if affected != true {
+		return "", errors.New("Success deleted, but out range values")
+	}
+
+	return "", nil
+}
+
 func WorkLog(hash string, message []string) (string, error) {
 	con := db.GetDBConn()
 
@@ -365,6 +392,17 @@ func ReportMessage(hash, message string) (string, error) {
 		}
 		res = r
 	case "log":
+		r, err := WorkLog(hash, m[1:])
+		if err != nil {
+			return "", err
+		}
+		res = r
+	case "rm":
+		r, err := SuspensionWorking(hash, m[1:])
+		if err != nil {
+			return "", err
+		}
+		res = r
 	default:
 		res = "no response"
 	}
