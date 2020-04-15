@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"log"
+	"server/auth"
 	"server/config"
 	"server/model/db"
 	"server/model/table"
@@ -52,22 +53,10 @@ func SignUp(appUser *slack.User) error {
 	return nil
 }
 
-func Working(hash string, message []string) error {
+func Working(user table.Users, message []string) error {
 	supplement := ""
 	date := time.Now()
 	con := db.GetDBConn()
-
-	if len(message) == 0 {
-		return errors.New("Too few arguments for working.")
-	}
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return err
-	}
 
 	if d, has := utils.SplitTimeOption(message[1:]); has == true {
 		date = d
@@ -96,17 +85,9 @@ func Working(hash string, message []string) error {
 	return nil
 }
 
-func FinishWorking(hash string, message []string) error {
+func FinishWorking(user table.Users, message []string) error {
 	date := time.Now()
 	con := db.GetDBConn()
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return err
-	}
 
 	if d, has := utils.SplitTimeOption(message[1:]); has == true {
 		date = d
@@ -128,21 +109,9 @@ func FinishWorking(hash string, message []string) error {
 	return nil
 }
 
-func Resting(hash string, message []string) error {
+func Resting(user table.Users, message []string) error {
 	date := time.Now()
 	con := db.GetDBConn()
-
-	if len(message) == 0 {
-		return errors.New("Too few arguments for working.")
-	}
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return err
-	}
 
 	workTime, err := query.GetWorkTime(con, message[0], user.Id)
 	if workTime.Id == 0 {
@@ -170,17 +139,9 @@ func Resting(hash string, message []string) error {
 	return nil
 }
 
-func FinishResting(hash string, message []string) error {
+func FinishResting(user table.Users, message []string) error {
 	date := time.Now()
 	con := db.GetDBConn()
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return err
-	}
 
 	workTime, err := query.GetWorkTime(con, message[0], user.Id)
 	if workTime.Id == 0 {
@@ -208,16 +169,8 @@ func FinishResting(hash string, message []string) error {
 	return nil
 }
 
-func SuspensionWorking(hash string, message []string) (string, error) {
+func SuspensionWorking(user table.Users, message []string) (string, error) {
 	con := db.GetDBConn()
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return "", errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return "", err
-	}
 
 	workTimeId, err := strconv.ParseUint(message[0], 10, 64)
 	if err != nil {
@@ -235,16 +188,8 @@ func SuspensionWorking(hash string, message []string) (string, error) {
 	return "", nil
 }
 
-func WorkLog(hash string, message []string) (string, error) {
+func WorkLog(user table.Users, message []string) (string, error) {
 	con := db.GetDBConn()
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return "", errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return "", err
-	}
 
 	cnt, err := strconv.Atoi(message[0])
 	if err != nil {
@@ -259,17 +204,9 @@ func WorkLog(hash string, message []string) (string, error) {
 	return utils.WorkLogMessage(workTimes)
 }
 
-func WorkTime(hash string, message []string) (string, error) {
+func WorkTime(user table.Users, message []string) (string, error) {
 	date := time.Now()
 	con := db.GetDBConn()
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return "", errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return "", err
-	}
 
 	if d, has := utils.SplitTimeOption(message[1:]); has == true {
 		date = d
@@ -293,17 +230,9 @@ func WorkTime(hash string, message []string) (string, error) {
 	return utils.WorkTimeMessage(sumTimes, date), nil
 }
 
-func WorkInfo(hash string, message []string) (string, error) {
+func WorkInfo(user table.Users, message []string) (string, error) {
 	date := time.Now()
 	con := db.GetDBConn()
-
-	user, err := query.GetUser(con, hash)
-	if user.Id == 0 {
-		return "", errors.New("Not found user. Did you completed SignUp?")
-	}
-	if err != nil {
-		return "", err
-	}
 
 	workInfo, err := query.FindWorkInfos(con, date, user.Id)
 	if err != nil {
@@ -315,13 +244,15 @@ func WorkInfo(hash string, message []string) (string, error) {
 
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 
+	has, user := auth.Auth(ev.Msg.User)
+
 	switch ev.Channel {
 	case s.signupCh:
-		user, err := s.rtm.GetUserInfo(ev.Msg.User)
+		u, err := s.rtm.GetUserInfo(ev.Msg.User)
 		if err != nil {
 			return err
 		}
-		if err := SignUp(user); err != nil {
+		if err := SignUp(u); err != nil {
 			return err
 		}
 	case s.workingCh:
@@ -332,7 +263,10 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 			}
 			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
 		} else {
-			res, err := WorkingMessage(ev.Msg.User, ev.Msg.Text)
+			if has != true {
+				return errors.New("SignUp still hasn't been completed.")
+			}
+			res, err := WorkingMessage(user, ev.Msg.Text)
 			if err != nil {
 				s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
 				return err
@@ -347,7 +281,10 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 			}
 			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
 		} else {
-			res, err := ReportMessage(ev.Msg.User, ev.Msg.Text)
+			if has != true {
+				return errors.New("SignUp still hasn't been completed.")
+			}
+			res, err := ReportMessage(user, ev.Msg.Text)
 			if err != nil {
 				s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
 				return err
@@ -364,7 +301,6 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 func PrefixMessage(message string) (string, error) {
 	var res string
 
-	log.Println(message)
 	switch message {
 	default:
 		res = "やあ僕きもかわいいgopher君!僕は以下の機能を持ってるよ活用してね!\n\n" +
@@ -381,29 +317,32 @@ func PrefixMessage(message string) (string, error) {
 	return res, nil
 }
 
-func WorkingMessage(hash, message string) (string, error) {
+func WorkingMessage(user table.Users, message string) (string, error) {
 	var res string
 
 	m := strings.Split(strings.TrimSpace(message), " ")
+	if len(m) <= 2 {
+		return "", errors.New("Too few arguments.")
+	}
 
 	switch m[0] {
 	case "開始":
-		if err := Working(hash, m[1:]); err != nil {
+		if err := Working(user, m[1:]); err != nil {
 			return "", err
 		}
 		res = "Start Working"
 	case "終了":
-		if err := FinishWorking(hash, m[1:]); err != nil {
+		if err := FinishWorking(user, m[1:]); err != nil {
 			return "", err
 		}
 		res = "End Working"
 	case "中断":
-		if err := Resting(hash, m[1:]); err != nil {
+		if err := Resting(user, m[1:]); err != nil {
 			return "", err
 		}
 		res = "Start Resting"
 	case "再開":
-		if err := FinishResting(hash, m[1:]); err != nil {
+		if err := FinishResting(user, m[1:]); err != nil {
 			return "", err
 		}
 		res = "End Resting"
@@ -413,32 +352,32 @@ func WorkingMessage(hash, message string) (string, error) {
 	return res, nil
 }
 
-func ReportMessage(hash, message string) (string, error) {
+func ReportMessage(user table.Users, message string) (string, error) {
 	var res string
 
 	m := strings.Split(strings.TrimSpace(message), " ")
 
 	switch m[0] {
 	case "作業記録":
-		r, err := WorkInfo(hash, m[1:])
+		r, err := WorkInfo(user, m[1:])
 		if err != nil {
 			return "", err
 		}
 		res = r
 	case "作業時間":
-		r, err := WorkTime(hash, m[1:])
+		r, err := WorkTime(user, m[1:])
 		if err != nil {
 			return "", err
 		}
 		res = r
 	case "log":
-		r, err := WorkLog(hash, m[1:])
+		r, err := WorkLog(user, m[1:])
 		if err != nil {
 			return "", err
 		}
 		res = r
 	case "rm":
-		r, err := SuspensionWorking(hash, m[1:])
+		r, err := SuspensionWorking(user, m[1:])
 		if err != nil {
 			return "", err
 		}
