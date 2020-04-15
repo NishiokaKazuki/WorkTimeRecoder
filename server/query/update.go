@@ -33,15 +33,17 @@ func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 		"user_id = ?",
 		workTimes.UserId,
 	).And(
+		"started_at < ?",
+		workTimes.FinishedAt,
+	).And(
 		"disabled = false",
-	).Update(&table.WorkTimes{
-		FinishedAt: workTimes.FinishedAt,
-	})
+	).Update(&workTimes)
 
 	return affected == 0, err
 }
 
 func UpdateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
+	workRest.Isfinished = true
 
 	affected, err := db.Cols(
 		"is_finished",
@@ -50,10 +52,11 @@ func UpdateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 		"work_time_id = ?",
 		workRest.Id,
 	).And(
+		"started_at < ?",
+		workRest.FinishedAt,
+	).And(
 		"disabled = false",
-	).Update(&table.WorkRests{
-		Isfinished: true,
-	})
+	).Update(&workRest)
 
 	return affected == 0, err
 }
