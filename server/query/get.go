@@ -14,6 +14,8 @@ func GetUser(db *xorm.Engine, hash string) (table.Users, error) {
 	).And(
 		"hash = ?",
 		hash,
+	).And(
+		"disabled = false",
 	).Get(&user)
 
 	return user, err
@@ -27,6 +29,8 @@ func GetWorkTime(db *xorm.Engine, content string, userId uint64) (table.WorkTime
 	).And(
 		"content = ?",
 		content,
+	).And(
+		"disabled = false",
 	).Get(&workTime)
 
 	return workTime, err

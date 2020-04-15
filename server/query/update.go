@@ -13,6 +13,8 @@ func UpdateUser(db *xorm.Engine, userName, hash string) (bool, error) {
 	).Where(
 		"hash = ?",
 		hash,
+	).And(
+		"disabled = false",
 	).Update(&table.Users{
 		Name: userName,
 	})
@@ -30,6 +32,8 @@ func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 	).And(
 		"user_id = ?",
 		workTimes.UserId,
+	).And(
+		"disabled = false",
 	).Update(&table.WorkTimes{
 		FinishedAt: workTimes.FinishedAt,
 	})
@@ -45,6 +49,8 @@ func UpdateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 	).Where(
 		"work_time_id = ?",
 		workRest.Id,
+	).And(
+		"disabled = false",
 	).Update(&table.WorkRests{
 		Isfinished: true,
 	})

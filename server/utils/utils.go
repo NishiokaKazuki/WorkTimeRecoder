@@ -15,6 +15,7 @@ const (
 	dateFormat = "2006-01-02 03:04"
 	decimal    = 10
 	letters    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	location   = "Asia/Tokyo"
 )
 
 func FormatTimeStamp(date string) (time.Time, error) {
@@ -22,7 +23,7 @@ func FormatTimeStamp(date string) (time.Time, error) {
 		t     time.Time
 		times []int
 	)
-	loc, _ := time.LoadLocation("Asia/Tokyo")
+	loc, _ := time.LoadLocation(location)
 
 	t, err := time.ParseInLocation(dateFormat, date, loc)
 	log.Println(err)
@@ -111,7 +112,7 @@ func SplitWorkInfo(workInfo []join.WorkInfos, user table.Users) (string, error) 
 	return user.Name + " 作業記録\n" + message, nil
 }
 
-func FormatWorkTimes(workTimes []table.WorkTimes) (string, error) {
+func WorkLogMessage(workTimes []table.WorkTimes) (string, error) {
 	var message string
 
 	for _, w := range workTimes {
@@ -120,6 +121,42 @@ func FormatWorkTimes(workTimes []table.WorkTimes) (string, error) {
 	}
 
 	return message, nil
+}
+
+func WorkTimeMessage(sumTimes time.Duration, date time.Time) string {
+	return date.Format("2006-01-02") + " の作業時間は" + sumTimes.String() + "です"
+}
+
+func CalcWorkTimes(workTimes []table.WorkTimes, workRests []table.WorkRests, date time.Time) (time.Duration, error) {
+	var times time.Duration
+	month := date.Month()
+	year := date.Year()
+	day := date.Day()
+	loc, _ := time.LoadLocation(location)
+
+	for _, w := range workTimes {
+
+		if !(w.StartedAt.Year() == year && w.StartedAt.Month() == month && w.StartedAt.Day() == day) {
+			w.StartedAt = time.Date(year, month, day, 0, 0, 0, 0, loc)
+		}
+		if !(w.FinishedAt.Year() == year && w.FinishedAt.Month() == month && w.FinishedAt.Day() == day) {
+			w.FinishedAt = time.Date(year, month, day, 0, 0, 0, 0, loc).Add(24 * time.Hour)
+		}
+		times += w.FinishedAt.Sub(w.StartedAt)
+	}
+
+	for _, w := range workRests {
+
+		if !(w.StartedAt.Year() == year && w.StartedAt.Month() == month && w.StartedAt.Day() == day) {
+			w.StartedAt = time.Date(year, month, day, 0, 0, 0, 0, loc)
+		}
+		if !(w.FinishedAt.Year() == year && w.FinishedAt.Month() == month && w.FinishedAt.Day() == day) {
+			w.FinishedAt = time.Date(year, month, day, 0, 0, 0, 0, loc).Add(24 * time.Hour)
+		}
+		times -= w.FinishedAt.Sub(w.StartedAt)
+	}
+
+	return times, nil
 }
 
 func SessionWorkTimesSetHash(session []table.SessionWorkTimes) []table.SessionWorkTimes {

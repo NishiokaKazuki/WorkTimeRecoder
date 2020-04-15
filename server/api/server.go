@@ -256,7 +256,41 @@ func WorkLog(hash string, message []string) (string, error) {
 		return "", err
 	}
 
-	return utils.FormatWorkTimes(workTimes)
+	return utils.WorkLogMessage(workTimes)
+}
+
+func WorkTime(hash string, message []string) (string, error) {
+	date := time.Now()
+	con := db.GetDBConn()
+
+	user, err := query.GetUser(con, hash)
+	if user.Id == 0 {
+		return "", errors.New("Not found user. Did you completed SignUp?")
+	}
+	if err != nil {
+		return "", err
+	}
+
+	if d, has := utils.SplitTimeOption(message[1:]); has == true {
+		date = d
+	}
+
+	workTimes, err := query.FindWorkTimesByDate(con, user.Id, date)
+	if err != nil {
+		return "", err
+	}
+
+	workRests, err := query.FindWorkRestsByDate(con, user.Id, date)
+	if err != nil {
+		return "", err
+	}
+
+	sumTimes, err := utils.CalcWorkTimes(workTimes, workRests, date)
+	if err != nil {
+		return "", err
+	}
+
+	return utils.WorkTimeMessage(sumTimes, date), nil
 }
 
 func WorkInfo(hash string, message []string) (string, error) {
@@ -387,6 +421,12 @@ func ReportMessage(hash, message string) (string, error) {
 	switch m[0] {
 	case "作業記録":
 		r, err := WorkInfo(hash, m[1:])
+		if err != nil {
+			return "", err
+		}
+		res = r
+	case "作業時間":
+		r, err := WorkTime(hash, m[1:])
 		if err != nil {
 			return "", err
 		}

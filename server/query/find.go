@@ -43,9 +43,45 @@ func FindWorkTimeLatest(db *xorm.Engine, cnt int, userId uint64) ([]table.WorkTi
 	err := db.Where(
 		"user_id = ?",
 		userId,
+	).And(
+		"disabled = false",
 	).Limit(cnt).Desc(
 		"started_at",
 	).Find(workTimes)
 
 	return workTimes, err
+}
+
+func FindWorkTimesByDate(db *xorm.Engine, userId uint64, date time.Time) ([]table.WorkTimes, error) {
+	var workTimes []table.WorkTimes
+
+	err := db.Where(
+		"user_id = ?",
+		userId,
+	).And(
+		"disabled = false",
+	).And(
+		"(DATE(started_at) = ? OR DATE(finished_at) = ?)",
+		date,
+		date,
+	).Find(&workTimes)
+
+	return workTimes, err
+}
+
+func FindWorkRestsByDate(db *xorm.Engine, userId uint64, date time.Time) ([]table.WorkRests, error) {
+	var workRests []table.WorkRests
+
+	err := db.Where(
+		"user_id = ?",
+		userId,
+	).And(
+		"disabled = false",
+	).And(
+		"(DATE(started_at) = ? OR DATE(finished_at) = ?)",
+		date,
+		date,
+	).Find(&workRests)
+
+	return workRests, err
 }

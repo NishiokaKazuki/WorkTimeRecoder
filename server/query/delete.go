@@ -36,6 +36,8 @@ func DeleteWorkTimes(db *xorm.Engine, workTimeId, userId uint64) (bool, error) {
 	).And(
 		"user_id = ?",
 		userId,
+	).And(
+		"disabled = false",
 	).Update(&table.WorkTimes{
 		Disabled: true,
 	})
