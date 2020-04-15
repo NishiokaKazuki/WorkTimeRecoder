@@ -243,59 +243,47 @@ func WorkInfo(user table.Users, message []string) (string, error) {
 }
 
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
-
+	var err error
+	res := ""
 	has, user := auth.Auth(ev.Msg.User)
 
 	switch ev.Channel {
 	case s.signupCh:
 		u, err := s.rtm.GetUserInfo(ev.Msg.User)
 		if err != nil {
-			return err
+			break
 		}
-		if err := SignUp(u); err != nil {
-			return err
-		}
+		err = SignUp(u)
+
 	case s.workingCh:
 		if strings.HasPrefix(ev.Msg.Text, s.botID) {
-			res, err := PrefixMessage(ev.Msg.Text)
-			if err != nil {
-				return err
-			}
-			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+			res, err = PrefixMessage(ev.Msg.Text)
 		} else {
 			if has != true {
 				return errors.New("SignUp still hasn't been completed.")
 			}
-			res, err := WorkingMessage(user, ev.Msg.Text)
-			if err != nil {
-				s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
-				return err
-			}
-			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+			res, err = WorkingMessage(user, ev.Msg.Text)
 		}
+
 	case s.reportCh:
 		if strings.HasPrefix(ev.Msg.Text, s.botID) {
-			res, err := PrefixMessage(ev.Msg.Text)
-			if err != nil {
-				return err
-			}
-			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+			res, err = PrefixMessage(ev.Msg.Text)
 		} else {
 			if has != true {
 				return errors.New("SignUp still hasn't been completed.")
 			}
-			res, err := ReportMessage(user, ev.Msg.Text)
-			if err != nil {
-				s.rtm.SendMessage(s.rtm.NewOutgoingMessage(err.Error(), ev.Channel))
-				return err
-			}
-			s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+			res, err = ReportMessage(user, ev.Msg.Text)
 		}
+
 	default:
 		log.Println("%s %s", ev.Channel, ev.Msg.Text)
 	}
 
-	return nil
+	if err != nil {
+		res = err.Error()
+	}
+	s.rtm.SendMessage(s.rtm.NewOutgoingMessage(res, ev.Channel))
+	return err
 }
 
 func PrefixMessage(message string) (string, error) {
