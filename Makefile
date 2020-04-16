@@ -27,6 +27,9 @@ docker-ps:
 docker-exec-db:
 	docker exec -it WorkTimeRecoder-db /bin/bash
 
+docker-exec-server:
+	docker exec -it WorkTimeRecoder-server /bin/bash
+
 run-server:
 	cd server &&\
 	go run main.go
