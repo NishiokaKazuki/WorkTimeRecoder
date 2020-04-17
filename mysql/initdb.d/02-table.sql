@@ -54,4 +54,6 @@ CREATE TABLE session_work_times
     disabled         boolean   NOT NULL DEFAULT false,
     created_at       timestamp NOT NULL DEFAULT current_timestamp,
     updated_at       timestamp NOT NULL DEFAULT current_timestamp,
-)
+    FOREIGN KEY (work_time_id)
+    REFERENCES work_times(id)
+) DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

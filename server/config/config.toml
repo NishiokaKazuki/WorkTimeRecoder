@@ -6,11 +6,11 @@ version  = "alpha"
 dbms = "mysql"
 user = "root"
 pass = "secret"
-protocol = "tcp([localhost]:13306)"
+protocol = "tcp(WorkTimeRecoder-db)"
 dbname = "WorkTimeRecoder"
 
 [BOT]
-tokenID    ="xoxb-1015900425939-1027655437248-EfdZKWj7qApLb7vc9QdmslSC"
+tokenID    ="xoxb-1015900425939-1027655437248-Oj9g4rqXHK25nFDWMBdVFIuq"
 botID      = "<@U010TK9CV7A>"
 workingCh  = "C010HHPLTFB"
 reportCh   = "C011CNUDR43"

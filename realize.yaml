@@ -1,0 +1,22 @@
+settings:
+    legacy:
+      force: false
+      interval: 0s
+schema:
+- name: server
+  path: server
+  commands:
+    build:
+      status: true
+      method: go build -o /go/bin/WorkTimeRecoder/server
+    run:
+      status: true
+      method: /go/bin/WorkTimeRecoder/server
+  watcher:
+    extensions:
+    - go
+    paths:
+    - /
+    ignored_paths:
+    - .git
+    - .realize

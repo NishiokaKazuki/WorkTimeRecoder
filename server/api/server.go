@@ -246,14 +246,12 @@ func WorkInfo(user table.Users, message []string) (string, error) {
 func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 	var err error
 	res := ""
-	has, user := auth.Auth(ev.Msg.User)
+
+	u, _ := s.rtm.GetUserInfo(ev.Msg.User)
+	has, user := auth.Auth(u.ID)
 
 	switch ev.Channel {
 	case s.signupCh:
-		u, err := s.rtm.GetUserInfo(ev.Msg.User)
-		if err != nil {
-			break
-		}
 		err = SignUp(u)
 
 	case s.workingCh:
@@ -290,7 +288,12 @@ func (s *Slackparams) ValidateMessageEvent(ev *slack.MessageEvent) error {
 func PrefixMessage(message string) (string, error) {
 	var res string
 
-	switch message {
+	m := strings.Split(strings.TrimSpace(message), " ")
+	if len(m) <= 1 {
+		return sentence.Greeting, nil
+	}
+
+	switch m[1] {
 	case "fuck":
 		res = sentence.Fuck
 	case "ブディの真似して":

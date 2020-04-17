@@ -1,8 +1,7 @@
 FROM golang:1.13.4
 
-ENV GO111MODULE=on
+RUN go get -u github.com/tockins/realize
 
-WORKDIR /go/src/WorkTimeRecoder/server
-COPY . .
-CMD go run main.go
 EXPOSE 49400
+
+CMD [ "realize", "start", "--run" ]

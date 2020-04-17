@@ -1,11 +1,12 @@
 version: "3"
 
 services:
-  server:
+  go:
     restart: always
     build: ../server
     volumes:
-      - ../server:/go/src/WorkTimeRecoder/server
+      - ../server:/go/app
+    working_dir: /go/app
     ports:
       - "49400:49400"
     container_name: "WorkTimeRecoder-server"
