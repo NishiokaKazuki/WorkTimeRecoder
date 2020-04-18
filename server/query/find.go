@@ -1,6 +1,7 @@
 package query
 
 import (
+	"log"
 	"server/model/join"
 	"server/model/table"
 	"time"
@@ -61,27 +62,33 @@ func FindWorkTimesByDate(db *xorm.Engine, userId uint64, date time.Time) ([]tabl
 	).And(
 		"disabled = false",
 	).And(
-		"(DATE(started_at) = ? OR DATE(finished_at) = ?)",
+		"((started_at BETWEEN ? AND ?) OR (finished_at BETWEEN ? AND ?))",
 		date,
+		date.AddDate(0, 0, 1),
 		date,
+		date.AddDate(0, 0, 1),
 	).Find(&workTimes)
+	log.Println(workTimes)
 
 	return workTimes, err
 }
 
-func FindWorkRestsByDate(db *xorm.Engine, userId uint64, date time.Time) ([]table.WorkRests, error) {
+func FindWorkRestsByDate(db *xorm.Engine, workTimeIds []uint64, date time.Time) ([]table.WorkRests, error) {
 	var workRests []table.WorkRests
 
-	err := db.Where(
-		"user_id = ?",
-		userId,
+	err := db.In(
+		"work_time_id",
+		workTimeIds,
 	).And(
 		"disabled = false",
 	).And(
-		"(DATE(started_at) = ? OR DATE(finished_at) = ?)",
+		"((started_at BETWEEN ? AND ?) OR (finished_at BETWEEN ? AND ?))",
 		date,
+		date.AddDate(0, 0, 1),
 		date,
+		date.AddDate(0, 0, 1),
 	).Find(&workRests)
+	log.Println(workRests)
 
 	return workRests, err
 }

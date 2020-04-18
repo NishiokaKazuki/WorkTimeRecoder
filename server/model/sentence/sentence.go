@@ -4,7 +4,7 @@ const (
 	Greeting = "やあ"
 	Fuck     = "Fuck"
 	Budi     = "うえええええええええええええええええええええ"
-	Help     = "やあ僕きもかわいいgopher君!僕は以下の機能を持ってるよ活用してね!\n\n" +
+	Help     = "help\n\n" +
 		"作業記録機能(例)\n" +
 		"1.開始 `hogehoge` -tm\n" +
 		"2.中断 `hogehoge` -t\n" +
@@ -13,4 +13,7 @@ const (
 		"option list\n" +
 		"-t  : 時間を指定可能 `yyyy-mm-dd hh:mm`, `hh:mm` のフォーマット\n" +
 		"-m  : コメントを追記可能 ただし半角空白で区切られる\n"
+	HelpReport = "help\n\n" +
+		"・作業記録 -t\n" +
+		"・作業時間 -t 'yyyy-mm-dd'\n"
 )

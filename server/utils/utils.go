@@ -13,6 +13,7 @@ import (
 
 const (
 	dateFormat = "2006-01-02 03:04"
+	dFormat    = "2006-01-02"
 	decimal    = 10
 	letters    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	location   = "Asia/Tokyo"
@@ -26,8 +27,11 @@ func FormatTimeStamp(date string) (time.Time, error) {
 	loc, _ := time.LoadLocation(location)
 
 	t, err := time.ParseInLocation(dateFormat, date, loc)
-	log.Println(err)
-	log.Println(t)
+	if err == nil {
+		return t, nil
+	}
+
+	t, err = time.ParseInLocation(dFormat, date, loc)
 	if err == nil {
 		return t, nil
 	}

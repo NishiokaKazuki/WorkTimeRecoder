@@ -206,10 +206,11 @@ func WorkLog(user table.Users, message []string) (string, error) {
 }
 
 func WorkTime(user table.Users, message []string) (string, error) {
+	var ids []uint64
 	date := time.Now()
 	con := db.GetDBConn()
 
-	if d, has := utils.SplitTimeOption(message[1:]); has == true {
+	if d, has := utils.SplitTimeOption(message[0:]); has == true {
 		date = d
 	}
 
@@ -218,7 +219,10 @@ func WorkTime(user table.Users, message []string) (string, error) {
 		return "", err
 	}
 
-	workRests, err := query.FindWorkRestsByDate(con, user.Id, date)
+	for _, w := range workTimes {
+		ids = append(ids, w.Id)
+	}
+	workRests, err := query.FindWorkRestsByDate(con, ids, date)
 	if err != nil {
 		return "", err
 	}
@@ -298,6 +302,8 @@ func PrefixMessage(message string) (string, error) {
 		res = sentence.Fuck
 	case "ブディの真似して":
 		res = sentence.Budi
+	case "やあ":
+		fallthrough
 	default:
 		res = sentence.Greeting
 	}
@@ -334,6 +340,8 @@ func WorkingMessage(user table.Users, message string) (string, error) {
 			return "", err
 		}
 		res = "End Resting"
+	case "help":
+		res = sentence.Help
 	default:
 		res = "no response"
 	}
@@ -370,6 +378,8 @@ func ReportMessage(user table.Users, message string) (string, error) {
 			return "", err
 		}
 		res = r
+	case "help":
+		res = sentence.HelpReport
 	default:
 		res = "no response"
 	}

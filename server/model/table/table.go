@@ -25,7 +25,7 @@ type WorkTimes struct {
 type WorkRests struct {
 	Id         uint64
 	WorkTimeId uint64
-	Isfinished bool
+	IsFinished bool
 	Disabled   bool
 	StartedAt  time.Time
 	FinishedAt time.Time
