@@ -10,8 +10,8 @@ protocol = "tcp(WorkTimeRecoder-db)"
 dbname = "WorkTimeRecoder"
 
 [BOT]
-tokenID    ="xoxb-1015900425939-1027655437248-aD5cMOw9WEIRB3dw88arDv6M"
+tokenID    ="xoxb-"
 botID      = "<@U010TK9CV7A>"
-workingCh  = "C010HHPLTFB"
-reportCh   = "C011CNUDR43"
-signupCh   = "C010JDA71BK"
+workingCh  = ""
+reportCh   = ""
+signupCh   = ""
