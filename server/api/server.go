@@ -98,6 +98,7 @@ func FinishWorking(user table.Users, message []string) error {
 		table.WorkTimes{
 			UserId:     user.Id,
 			Content:    message[0],
+			IsFinished: true,
 			FinishedAt: date,
 		})
 	if err != nil {
@@ -158,6 +159,7 @@ func FinishResting(user table.Users, message []string) error {
 
 	affected, err := query.UpdateWorkRest(con, table.WorkRests{
 		WorkTimeId: workTime.Id,
+		IsFinished: true,
 		FinishedAt: date,
 	})
 	if err != nil {
@@ -315,9 +317,6 @@ func WorkingMessage(user table.Users, message string) (string, error) {
 	var res string
 
 	m := strings.Split(strings.TrimSpace(message), " ")
-	if len(m) <= 2 {
-		return "", errors.New("Too few arguments.")
-	}
 
 	switch m[0] {
 	case "開始":
@@ -389,6 +388,8 @@ func ReportMessage(user table.Users, message string) (string, error) {
 
 func ListenAndServe(token string) {
 	log.Println("Starting Server")
+	log.Println(db.GetDBConn().GetTZDatabase())
+	log.Println(db.GetDBConn().GetTZLocation())
 
 	conf, err := config.ReadBOTConfig()
 	if err != nil {

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"log"
 	"math/rand"
 	"server/model/join"
 	"server/model/table"
@@ -12,7 +11,7 @@ import (
 )
 
 const (
-	dateFormat = "2006-01-02 03:04"
+	dateFormat = "2006-01-02 15:04"
 	dFormat    = "2006-01-02"
 	decimal    = 10
 	letters    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -24,14 +23,14 @@ func FormatTimeStamp(date string) (time.Time, error) {
 		t     time.Time
 		times []int
 	)
-	loc, _ := time.LoadLocation(location)
+	jst, err := time.LoadLocation(location)
 
-	t, err := time.ParseInLocation(dateFormat, date, loc)
+	t, err = time.ParseInLocation(dateFormat, date, jst)
 	if err == nil {
 		return t, nil
 	}
 
-	t, err = time.ParseInLocation(dFormat, date, loc)
+	t, err = time.ParseInLocation(dFormat, date, jst)
 	if err == nil {
 		return t, nil
 	}
@@ -54,7 +53,7 @@ func FormatTimeStamp(date string) (time.Time, error) {
 	}
 
 	now := time.Now()
-	t = time.Date(now.Year(), now.Month(), now.Day(), times[0], times[1], times[2], 0, loc)
+	t = time.Date(now.Year(), now.Month(), now.Day(), times[0], times[1], times[2], 0, jst)
 
 	return t, nil
 }
@@ -67,7 +66,6 @@ func SplitTimeOption(message []string) (time.Time, bool) {
 			if len(message) >= i+3 {
 				if !strings.HasPrefix(message[i+2], "-") {
 					message[i+1] += " " + message[i+2]
-					log.Println(message[i+1])
 				}
 			}
 			if date, err := FormatTimeStamp(message[i+1]); err == nil {

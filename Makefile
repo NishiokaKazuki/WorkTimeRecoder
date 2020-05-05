@@ -4,6 +4,7 @@ docker-up:
 
 docker-init-db:
 	cd docker &&\
+	docker-compose exec db /bin/bash -psecret -c "mysql_tzinfo_to_sql /usr/share/zoneinfo/ | mysql -u root -psecret mysql" &&\
 	docker-compose exec db /bin/bash -psecret -c "chmod 0775 docker-entrypoint-initdb.d/init-db.sh" &&\
 	docker-compose exec db /bin/bash -psecret -c "sh ./docker-entrypoint-initdb.d/init-db.sh"
 

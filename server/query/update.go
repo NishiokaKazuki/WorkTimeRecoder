@@ -25,6 +25,7 @@ func UpdateUser(db *xorm.Engine, userName, hash string) (bool, error) {
 func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 
 	affected, err := db.Cols(
+		"is_finished",
 		"finished_at",
 	).Where(
 		"content = ?",
