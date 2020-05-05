@@ -55,7 +55,12 @@ func SignUp(appUser *slack.User) error {
 }
 
 func Working(user table.Users, message []string) error {
+	var (
+		affected bool
+		err      error
+	)
 	supplement := ""
+	content := message[0]
 	date := time.Now()
 	con := db.GetDBConn()
 
@@ -67,15 +72,28 @@ func Working(user table.Users, message []string) error {
 		supplement = supple
 	}
 
-	affected, err := query.InsertWorkTime(
-		con,
-		table.WorkTimes{
-			UserId:     user.Id,
-			Content:    message[0],
-			Supplement: supplement,
-			StartedAt:  date,
-		},
-	)
+	workTime, _ := query.GetWorkTime(con, content, user.Id)
+	if workTime.Id != 0 {
+		affected, err = query.UpdateStartOnWorkTime(
+			con,
+			table.WorkTimes{
+				UserId:     user.Id,
+				Content:    content,
+				Supplement: supplement,
+				StartedAt:  date,
+			},
+		)
+	} else {
+		affected, err = query.InsertWorkTime(
+			con,
+			table.WorkTimes{
+				UserId:     user.Id,
+				Content:    content,
+				Supplement: supplement,
+				StartedAt:  date,
+			},
+		)
+	}
 	if err != nil {
 		return err
 	}

@@ -43,6 +43,27 @@ func UpdateWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
 	return affected == 0, err
 }
 
+func UpdateStartOnWorkTime(db *xorm.Engine, workTimes table.WorkTimes) (bool, error) {
+
+	affected, err := db.Cols(
+		"supplement",
+		"started_at",
+	).Where(
+		"content = ?",
+		workTimes.Content,
+	).And(
+		"user_id = ?",
+		workTimes.UserId,
+	).And(
+		"finished_at > ?",
+		workTimes.StartedAt,
+	).And(
+		"disabled = false",
+	).Update(&workTimes)
+
+	return affected == 0, err
+}
+
 func UpdateWorkRest(db *xorm.Engine, workRest table.WorkRests) (bool, error) {
 	workRest.IsFinished = true
 
