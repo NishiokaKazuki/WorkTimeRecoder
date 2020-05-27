@@ -2,6 +2,7 @@ package query
 
 import (
 	"log"
+	"server/model/enums"
 	"server/model/join"
 	"server/model/table"
 	"time"
@@ -54,13 +55,19 @@ func FindWorkTimeLatest(db *xorm.Engine, cnt int, userId uint64) ([]table.WorkTi
 }
 
 func FindWorkTimesByDate(db *xorm.Engine, userId uint64, date time.Time) ([]table.WorkTimes, error) {
-	var workTimes []table.WorkTimes
+	var (
+		workTimes []table.WorkTimes
+		where     string
+	)
+	if userId == enums.AllUser {
+		where = "user_id = ? OR disabled = false"
+	} else {
+		where = "user_id = ? AND disabled = false"
+	}
 
 	err := db.Where(
-		"user_id = ?",
+		where,
 		userId,
-	).And(
-		"disabled = false",
 	).And(
 		"((started_at BETWEEN ? AND ?) OR (finished_at BETWEEN ? AND ?))",
 		date,
@@ -68,7 +75,6 @@ func FindWorkTimesByDate(db *xorm.Engine, userId uint64, date time.Time) ([]tabl
 		date,
 		date.AddDate(0, 0, 1),
 	).Find(&workTimes)
-	log.Println(workTimes)
 
 	return workTimes, err
 }

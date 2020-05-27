@@ -177,3 +177,8 @@ func createHash(cnt int) string {
 
 	return string(b)
 }
+
+func DateChange(y int, m time.Month, d int) bool {
+	t := time.Now()
+	return (y != t.Year()) || (m != t.Month()) || (d != t.Year())
+}

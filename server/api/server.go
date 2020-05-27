@@ -406,8 +406,6 @@ func ReportMessage(user table.Users, message string) (string, error) {
 
 func ListenAndServe(token string) {
 	log.Println("Starting Server")
-	log.Println(db.GetDBConn().GetTZDatabase())
-	log.Println(db.GetDBConn().GetTZLocation())
 
 	conf, err := config.ReadBOTConfig()
 	if err != nil {
